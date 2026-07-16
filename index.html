@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mój Targ - Panel Sprzedaży</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        /* Zabezpieczenie szerokości dla wszystkich elementów */
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f0fa;
+            color: #333;
+            padding: 10px; /* Zmniejszony padding dla małych ekranów */
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, #8338ec, #ff006e);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .header h2 {
+            margin: 0 0 5px 0;
+            font-size: 1.4em;
+        }
+        .date-container {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap; /* Pozwala na zawijanie na bardzo małych ekranach */
+            gap: 10px;
+        }
+        .date-container label {
+            font-weight: bold;
+            color: #555;
+        }
+        .date-container input[type="date"] {
+            font-size: 1.1em;
+            padding: 8px;
+            border: 2px solid #8338ec;
+            border-radius: 8px;
+            outline: none;
+            color: #333;
+            flex-grow: 1;
+        }
+        
+        /* Styl kart kategorii */
+        .category-card {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-left: 5px solid #8338ec;
+        }
+        .category-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #222;
+            margin-bottom: 5px;
+        }
+        .category-inputs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        .category-inputs input {
+            padding: 12px 10px; /* Nieco większy padding dla wygody klikania (fat finger) */
+            border: 2px solid #e2d9f3;
+            border-radius: 8px;
+            font-size: 1em;
+            outline: none;
+            transition: 0.2s;
+        }
+        .category-inputs input:focus {
+            border-color: #8338ec;
+        }
+        .name-input {
+            flex-grow: 1;
+            min-width: 100%; /* Na telefonie lepiej, by nazwa zajmowała całą szerokość */
+        }
+        .price-input {
+            flex-grow: 1;
+            min-width: 80px;
+        }
+        .qty-input {
+            width: 70px;
+            text-align: center;
+        }
+        .btn-add {
+            background-color: #ff006e;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            flex-grow: 1;
+            min-width: 100%; /* Przycisk na pełną szerokość ułatwia klikanie na mobile */
+        }
+        .btn-add:hover { background-color: #cc0058; }
+
+        /* Media queries dla nieco większych ekranów (np. tryb poziomy) */
+        @media(min-width: 400px) {
+            .name-input { min-width: 150px; flex-grow: 2; }
+            .btn-add { min-width: auto; }
+        }
+
+        /* Lista dzisiejszej sprzedaży */
+        .sales-list-container {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .sales-list-container h3 {
+            margin-top: 0;
+            color: #8338ec;
+            font-size: 1.2em;
+            border-bottom: 2px solid #f4f0fa;
+            padding-bottom: 8px;
+        }
+        .sale-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px dashed #eee;
+            font-size: 1em;
+        }
+        .sale-item:last-child { border-bottom: none; }
+        .sale-details {
+            display: flex;
+            flex-direction: column;
+            max-width: 65%;
+        }
+        .sale-title { font-weight: bold; color: #333; word-wrap: break-word; }
+        .sale-subtitle { font-size: 0.85em; color: #666; margin-top: 2px; }
+        
+        .btn-delete {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 10px; /* Większy przycisk do klikania na telefonie */
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-left: 10px;
+            min-width: 35px;
+        }
+        .btn-delete:hover { background-color: #e60000; }
+
+        /* Suma zarobku na żywo */
+        .live-earnings {
+            background: #eef1ff;
+            border-left: 5px solid #3a86ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 1.25em;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Przyciski akcji główne */
+        .action-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-action {
+            width: 100%;
+            padding: 14px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-reset { background-color: #d90429; color: white; font-size: 1em; padding: 12px; }
+        .btn-reset:hover { background-color: #a3001a; }
+
+        /* Przyciski Raportów Miesiąc/Tydzień */
+        .reports-btns {
+            display: flex;
+            flex-direction: column; /* Na telefonach przyciski pod spodem wyglądają lepiej */
+            gap: 10px;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+        @media(min-width: 480px) {
+            .reports-btns { flex-direction: row; }
+        }
+        .btn-report {
+            flex: 1;
+            background-color: #ffb703;
+            color: #000;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1em;
+            transition: 0.2s;
+        }
+        .btn-report:hover {
+            background-color: #fb8500;
+            color: white;
+        }
+
+        /* Kontener na wygenerowany raport okresowy */
+        #periodic-report {
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-left: 5px solid #ffb703;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>👗 Mój Targ - Panel Sprzedaży</h2>
+        <div style="font-size: 0.9em; opacity: 0.9;">Kompletny menedżer handlu</div>
+    </div>
+
+    <div class="date-container">
+        <label for="selected-date">📅 Wybierz dzień:</label>
+        <input type="date" id="selected-date">
+    </div>
+
+    <div id="categories-container"></div>
+
+    <div class="sales-list-container">
+        <h3>📋 Sprzedane rzeczy:</h3>
+        <div id="sales-list"></div>
+    </div>
+
+    <div class="live-earnings">
+        <span>Suma zarobku dnia:</span>
+        <span id="live-total" style="color: #3a86ff;">0 zł</span>
+    </div>
+
+    <div class="action-btns">
+        <button class="btn-action btn-reset" onclick="clearCurrentDay()">❌ Wyzeruj ten dzień</button>
+    </div>
+
+    <div class="reports-btns">
+        <button class="btn-report" onclick="pokazRaportTygodnia()">📊 Raport Tygodniowy</button>
+        <button class="btn-report" onclick="pokazRaportMiesiaca()">📅 Raport Miesięczny</button>
+        <button class="btn-report" onclick="generujPDF()">📄 Pobierz PDF</button>
+    </div>
+
+    <div id="periodic-report"></div>
+
+    <script>
+        const kategorie = [
+            { nazwa: 'Bluzka', emoji: '👚' },
+            { nazwa: 'Spodnie', emoji: '👖' },
+            { nazwa: 'Swetry', emoji: '🧶' },
+            { nazwa: 'Sukienka', emoji: '👗' },
+            { nazwa: 'Spodnica', emoji: '💃' },
+            { nazwa: 'Tunika', emoji: '👘' },
+            { nazwa: 'Wisiorek', emoji: '📿' },
+            { nazwa: 'Rekawiczki', emoji: '🧤' },
+            { nazwa: 'Skarpety', emoji: '🧦' }
+        ];
+        
+        let currentDate = '';
+        let sprzedaz = []; 
+
+        function init() {
+            const dateInput = document.getElementById('selected-date');
+            
+            const dzis = new Date();
+            const rok = dzis.getFullYear();
+            const miesiac = String(dzis.getMonth() + 1).padStart(2, '0');
+            const dzien = String(dzis.getDate()).padStart(2, '0');
+            const dzisiejszaData = `${rok}-${miesiac}-${dzien}`;
+            
+            dateInput.value = dzisiejszaData;
+            currentDate = dzisiejszaData;
+
+            renderujFormularzeKategorii();
+            wczytajDaneDlaDaty(currentDate);
+
+            dateInput.addEventListener('change', (e) => {
+                currentDate = e.target.value;
+                wczytajDaneDlaDaty(currentDate);
+                document.getElementById('periodic-report').style.display = 'none';
+            });
+        }
+
+        function renderujFormularzeKategorii() {
+            const container = document.getElementById('categories-container');
+            container.innerHTML = '';
+            
+            kategorie.forEach(kat => {
+                // Dodano inputmode, aby na smartfonach pojawiała się klawiatura numeryczna
+                container.innerHTML += `
+                    <div class="category-card">
+                        <div class="category-header">${kat.emoji} ${kat.nazwa}</div>
+                        <div class="category-inputs">
+                            <input type="text" class="name-input" id="name-${kat.nazwa}" placeholder="Szczegóły" onkeyup="checkEnter(event, '${kat.nazwa}')">
+                            <input type="number" inputmode="decimal" class="price-input" id="price-${kat.nazwa}" placeholder="Cena zł" min="0" step="any" onkeyup="checkEnter(event, '${kat.nazwa}')">
+                            <input type="number" inputmode="numeric" class="qty-input" id="qty-${kat.nazwa}" value="1" min="1" placeholder="Szt." onkeyup="checkEnter(event, '${kat.nazwa}')">
+                            <button class="btn-add" onclick="dodajSprzedaz('${kat.nazwa}')">Dodaj</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function checkEnter(event, kategoria) {
+            // Lepsza obsługa klawisza enter z urządzeń mobilnych
+            if (event.key === 'Enter' || event.keyCode === 13) { 
+                dodajSprzedaz(kategoria);
+                // Ukrycie wirtualnej klawiatury po kliknięciu Enter (dla wygody na mobile)
+                event.target.blur();
+            }
+        }
+
+        function dodajSprzedaz(kategoria) {
+            const nameInput = document.getElementById(`name-${kategoria}`);
+            const priceInput = document.getElementById(`price-${kategoria}`);
+            const qtyInput = document.getElementById(`qty-${kategoria}`);
+            
+            const nazwaSzczegolowa = nameInput.value.trim() || "Bez opisu";
+            // Zabezpieczenie przed wpisywaniem przecinków zamiast kropek na klawiaturach mobilnych
+            let cenaStr = priceInput.value.replace(',', '.');
+            const cena = parseFloat(cenaStr);
+            const ilosc = parseInt(qtyInput.value) || 1;
+            
+            if (isNaN(cena) || cena <= 0) {
+                alert("Proszę wpisać prawidłową cenę!");
+                return;
+            }
+            
+            sprzedaz.push({
+                id: Date.now() + Math.random().toString(36).substr(2, 5),
+                kategoria: kategoria,
+                nazwa: nazwaSzczegolowa,
+                cena: cena,
+                ilosc: ilosc
+            });
+            
+            nameInput.value = '';
+            priceInput.value = '';
+            qtyInput.value = '1';
+            
+            zapiszIDzialaj();
+        }
+
+        function usunWpis(id) {
+            if(confirm("Czy na pewno chcesz usunąć tę rzecz z listy?")) {
+                sprzedaz = sprzedaz.filter(item => item.id !== id);
+                zapiszIDzialaj();
+            }
+        }
+
+        function wczytajDaneDlaDaty(data) {
+            const klucz = `targ_sprzedaz_v3_${data}`;
+            const zapisane = localStorage.getItem(klucz);
+            sprzedaz = zapisane ? JSON.parse(zapisane) : [];
+            renderujListeSprzedanych();
+            odswiezUtargNaZywo();
+        }
+
+        function zapiszIDzialaj() {
+            localStorage.setItem(`targ_sprzedaz_v3_${currentDate}`, JSON.stringify(sprzedaz));
+            renderujListeSprzedanych();
+            odswiezUtargNaZywo();
+        }
+
+        function renderujListeSprzedanych() {
+            const container = document.getElementById('sales-list');
+            container.innerHTML = '';
+            
+            if (sprzedaz.length === 0) {
+                container.innerHTML = '<p style="color: #888; text-align: center; margin: 10px 0;">Jeszcze nic dzisiaj nie sprzedano.</p>';
+                return;
+            }
+            
+            sprzedaz.forEach(item => {
+                const emoji = (kategorie.find(k => k.nazwa === item.kategoria) || {}).emoji || '📦';
+                const sumaDlaPozycji = item.cena * item.ilosc;
+                
+                container.innerHTML += `
+                    <div class="sale-item">
+                        <div class="sale-details">
+                            <span class="sale-title">${emoji} ${item.kategoria} - ${item.nazwa}</span>
+                            <span class="sale-subtitle">${item.cena} zł x ${item.ilosc} szt.</span>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <span style="font-weight: bold; color: #ff006e; white-space: nowrap;">${sumaDlaPozycji} zł</span>
+                            <button class="btn-delete" onclick="usunWpis('${item.id}')">X</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function odswiezUtargNaZywo() {
+            let suma = 0;
+            sprzedaz.forEach(item => suma += item.cena * item.ilosc);
+            document.getElementById('live-total').innerText = `${suma} zł`;
+        }
+
+        function clearCurrentDay() {
+            if (confirm(`⚠️ UWAGA!\n\nCzy na pewno chcesz WYZEROWAĆ wszystkie wpisy z dnia: ${currentDate}?\n(Tego nie da się cofnąć!)`)) {
+                sprzedaz = [];
+                zapiszIDzialaj();
+                alert(`Dzień ${currentDate} został całkowicie wyzerowany.`);
+            }
+        }
+
+        function pobierzSumeDnia(dataString) {
+            const zapisane = localStorage.getItem(`targ_sprzedaz_v3_${dataString}`);
+            if (!zapisane) return 0;
+            let suma = 0;
+            JSON.parse(zapisane).forEach(item => suma += (item.cena * item.ilosc));
+            return suma;
+        }
+
+        function pokazRaportTygodnia() {
+            const wybrana = new Date(currentDate);
+            const dzienTygodnia = wybrana.getDay();
+            const korektaDoPoniedzialku = dzienTygodnia === 0 ? -6 : 1 - dzienTygodnia;
+            
+            const poniedzialek = new Date(wybrana);
+            poniedzialek.setDate(wybrana.getDate() + korektaDoPoniedzialku);
+
+            let sumaTygodnia = 0;
+            let listaHTML = '';
+
+            for(let i=0; i<7; i++) {
+                let d = new Date(poniedzialek);
+                d.setDate(poniedzialek.getDate() + i);
+                const dataStr = d.toISOString().split('T')[0];
+                const sumaDnia = pobierzSumeDnia(dataStr);
+                
+                if (sumaDnia > 0) {
+                    sumaTygodnia += sumaDnia;
+                    listaHTML += `
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #ddd;">
+                            <span>${dataStr}</span>
+                            <strong style="color: #3a86ff;">${sumaDnia} zł</strong>
+                        </div>
+                    `;
+                }
+            }
+            
+            const niedziela = new Date(poniedzialek);
+            niedziela.setDate(poniedzialek.getDate() + 6);
+            
+            wyswietlRaportNaEkranie(
+                '📊 Raport Tygodniowy', 
+                `${poniedzialek.toISOString().split('T')[0]} — ${niedziela.toISOString().split('T')[0]}`,
+                listaHTML, 
+                sumaTygodnia
+            );
+        }
+
+        function pokazRaportMiesiaca() {
+            const podzial = currentDate.split('-');
+            const rok = podzial[0];
+            const miesiac = podzial[1];
+            
+            let sumaMiesiaca = 0;
+            let listaHTML = '';
+            
+            for(let i = 1; i <= 31; i++) {
+                const dzien = String(i).padStart(2, '0');
+                const dataStr = `${rok}-${miesiac}-${dzien}`;
+                
+                const sprawdzanaData = new Date(dataStr);
+                if(isNaN(sprawdzanaData.getTime()) || sprawdzanaData.getMonth() + 1 != parseInt(miesiac)) continue;
+
+                const sumaDnia = pobierzSumeDnia(dataStr);
+                if (sumaDnia > 0) {
+                    sumaMiesiaca += sumaDnia;
+                    listaHTML += `
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #ddd;">
+                            <span>${dataStr}</span>
+                            <strong style="color: #8338ec;">${sumaDnia} zł</strong>
+                        </div>
+                    `;
+                }
+            }
+
+            wyswietlRaportNaEkranie(
+                '📅 Raport Miesięczny', 
+                `Miesiąc: ${miesiac} / ${rok}`,
+                listaHTML, 
+                sumaMiesiaca
+            );
+        }
+
+        function wyswietlRaportNaEkranie(tytul, podtytul, listaHTML, suma) {
+            const container = document.getElementById('periodic-report');
+            container.innerHTML = `
+                <h3 style="margin-top:0; color: #ffb703; font-size: 1.4em;">${tytul}</h3>
+                <div style="font-size: 0.95em; color: #666; margin-bottom: 15px;">${podtytul}</div>
+                
+                <div style="margin-bottom: 15px;">
+                    ${listaHTML || '<p style="color:#999; text-align: center;">Brak danych sprzedażowych w tym okresie.</p>'}
+                </div>
+                
+                <div style="margin-top: 15px; font-size: 1.3em; text-align: right; border-top: 2px solid #eee; padding-top: 10px;">
+                    Łączna suma: <strong style="color:#ff006e; font-size: 1.2em;">${suma} zł</strong>
+                </div>
+            `;
+            container.style.display = 'block';
+        }
+
+        function generujPDF() {
+            try {
+                if (typeof window.jspdf === 'undefined') {
+                    alert("Biblioteka PDF jeszcze się nie załadowała. Upewnij się, że masz połączenie z internetem i spróbuj ponownie za chwilę.");
+                    return;
+                }
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                doc.setFont("helvetica");
+                doc.setFontSize(18);
+                doc.text("Raport sprzedazy",15,20);
+                doc.setFontSize(11);
+                doc.text("Data: "+new Date().toLocaleDateString("pl-PL"),15,30);
+                let y=45,suma=0;
+                
+                if(sprzedaz.length===0){
+                    doc.text("Brak sprzedazy.",15,y);
+                } else {
+                  sprzedaz.forEach(item=>{
+                    const wartosc=item.cena*item.ilosc;
+                    suma+=wartosc;
+                    doc.text(`${item.kategoria} | ${item.nazwa} | ${item.cena} zl x ${item.ilosc} = ${wartosc} zl`,15,y);
+                    y+=8;
+                    if(y>270){doc.addPage();y=20;}
+                  });
+                  y+=10;
+                  doc.setFontSize(14);
+                  doc.text(`Laczny utarg: ${suma} zl`,15,y);
+                }
+                doc.save(`Raport_${currentDate}.pdf`);
+            } catch(e) {
+                alert("Wystąpił błąd podczas generowania pliku PDF na tym urządzeniu.");
+                console.error(e);
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
