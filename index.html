@@ -2,22 +2,14 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mój Targ - Panel Sprzedaży</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
     <style>
-        /* Zabezpieczenie szerokości dla wszystkich elementów */
-        * {
-            box-sizing: border-box;
-        }
-        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f0fa;
             color: #333;
-            padding: 10px; /* Zmniejszony padding dla małych ekranów */
+            padding: 15px;
             max-width: 600px;
             margin: 0 auto;
         }
@@ -25,14 +17,14 @@
             text-align: center;
             background: linear-gradient(135deg, #8338ec, #ff006e);
             color: white;
-            padding: 15px;
+            padding: 20px;
             border-radius: 15px;
             margin-bottom: 20px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
         .header h2 {
-            margin: 0 0 5px 0;
-            font-size: 1.4em;
+            margin: 0 0 10px 0;
+            font-size: 1.6em;
         }
         .date-container {
             background: white;
@@ -43,8 +35,6 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            flex-wrap: wrap; /* Pozwala na zawijanie na bardzo małych ekranach */
-            gap: 10px;
         }
         .date-container label {
             font-weight: bold;
@@ -57,7 +47,6 @@
             border-radius: 8px;
             outline: none;
             color: #333;
-            flex-grow: 1;
         }
         
         /* Styl kart kategorii */
@@ -85,7 +74,7 @@
             align-items: center;
         }
         .category-inputs input {
-            padding: 12px 10px; /* Nieco większy padding dla wygody klikania (fat finger) */
+            padding: 10px;
             border: 2px solid #e2d9f3;
             border-radius: 8px;
             font-size: 1em;
@@ -97,35 +86,27 @@
         }
         .name-input {
             flex-grow: 1;
-            min-width: 100%; /* Na telefonie lepiej, by nazwa zajmowała całą szerokość */
+            min-width: 150px;
         }
         .price-input {
-            flex-grow: 1;
-            min-width: 80px;
+            width: 80px;
         }
         .qty-input {
-            width: 70px;
+            width: 60px;
             text-align: center;
         }
         .btn-add {
             background-color: #ff006e;
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 10px 20px;
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
             transition: 0.2s;
             flex-grow: 1;
-            min-width: 100%; /* Przycisk na pełną szerokość ułatwia klikanie na mobile */
         }
         .btn-add:hover { background-color: #cc0058; }
-
-        /* Media queries dla nieco większych ekranów (np. tryb poziomy) */
-        @media(min-width: 400px) {
-            .name-input { min-width: 150px; flex-grow: 2; }
-            .btn-add { min-width: auto; }
-        }
 
         /* Lista dzisiejszej sprzedaży */
         .sales-list-container {
@@ -154,22 +135,19 @@
         .sale-details {
             display: flex;
             flex-direction: column;
-            max-width: 65%;
         }
-        .sale-title { font-weight: bold; color: #333; word-wrap: break-word; }
+        .sale-title { font-weight: bold; color: #333; }
         .sale-subtitle { font-size: 0.85em; color: #666; margin-top: 2px; }
-        
         .btn-delete {
             background-color: #ff4d4d;
             color: white;
             border: none;
-            padding: 10px; /* Większy przycisk do klikania na telefonie */
+            padding: 6px 12px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 0.85em;
             font-weight: bold;
             margin-left: 10px;
-            min-width: 35px;
         }
         .btn-delete:hover { background-color: #e60000; }
 
@@ -184,7 +162,6 @@
             font-weight: bold;
             display: flex;
             justify-content: space-between;
-            align-items: center;
         }
 
         /* Przyciski akcji główne */
@@ -207,28 +184,27 @@
         .btn-reset { background-color: #d90429; color: white; font-size: 1em; padding: 12px; }
         .btn-reset:hover { background-color: #a3001a; }
 
-        /* Przyciski Raportów Miesiąc/Tydzień */
+        /* Przyciski Raportów Miesiąc/Tydzień/Dzień */
         .reports-btns {
             display: flex;
-            flex-direction: column; /* Na telefonach przyciski pod spodem wyglądają lepiej */
+            flex-wrap: wrap;
             gap: 10px;
             margin-top: 20px;
             margin-bottom: 30px;
         }
-        @media(min-width: 480px) {
-            .reports-btns { flex-direction: row; }
-        }
         .btn-report {
-            flex: 1;
+            flex: 1 1 calc(33% - 10px); 
+            min-width: 130px;
             background-color: #ffb703;
             color: #000;
-            padding: 14px;
+            padding: 12px;
             border: none;
             border-radius: 10px;
             font-weight: bold;
             cursor: pointer;
             font-size: 1em;
             transition: 0.2s;
+            text-align: center;
         }
         .btn-report:hover {
             background-color: #fb8500;
@@ -277,9 +253,11 @@
     </div>
 
     <div class="reports-btns">
+        <button class="btn-report" style="background-color: #3a86ff; color: white;" onclick="pokazRaportDnia()">📝 Raport Dzienny</button>
         <button class="btn-report" onclick="pokazRaportTygodnia()">📊 Raport Tygodniowy</button>
         <button class="btn-report" onclick="pokazRaportMiesiaca()">📅 Raport Miesięczny</button>
-        <button class="btn-report" onclick="generujPDF()">📄 Pobierz PDF</button>
+        <button class="btn-report" style="background-color: #ff006e; color: white;" onclick="generujPDF()">📄 PDF Dzienny</button>
+        <button class="btn-report" style="background-color: #8338ec; color: white;" onclick="generujPDFMiesiaca()">📄 PDF Miesięczny</button>
     </div>
 
     <div id="periodic-report"></div>
@@ -327,14 +305,13 @@
             container.innerHTML = '';
             
             kategorie.forEach(kat => {
-                // Dodano inputmode, aby na smartfonach pojawiała się klawiatura numeryczna
                 container.innerHTML += `
                     <div class="category-card">
                         <div class="category-header">${kat.emoji} ${kat.nazwa}</div>
                         <div class="category-inputs">
                             <input type="text" class="name-input" id="name-${kat.nazwa}" placeholder="Szczegóły" onkeyup="checkEnter(event, '${kat.nazwa}')">
-                            <input type="number" inputmode="decimal" class="price-input" id="price-${kat.nazwa}" placeholder="Cena zł" min="0" step="any" onkeyup="checkEnter(event, '${kat.nazwa}')">
-                            <input type="number" inputmode="numeric" class="qty-input" id="qty-${kat.nazwa}" value="1" min="1" placeholder="Szt." onkeyup="checkEnter(event, '${kat.nazwa}')">
+                            <input type="number" class="price-input" id="price-${kat.nazwa}" placeholder="Cena zł" min="0" step="any" onkeyup="checkEnter(event, '${kat.nazwa}')">
+                            <input type="number" class="qty-input" id="qty-${kat.nazwa}" value="1" min="1" placeholder="Szt." onkeyup="checkEnter(event, '${kat.nazwa}')">
                             <button class="btn-add" onclick="dodajSprzedaz('${kat.nazwa}')">Dodaj</button>
                         </div>
                     </div>
@@ -343,12 +320,7 @@
         }
 
         function checkEnter(event, kategoria) {
-            // Lepsza obsługa klawisza enter z urządzeń mobilnych
-            if (event.key === 'Enter' || event.keyCode === 13) { 
-                dodajSprzedaz(kategoria);
-                // Ukrycie wirtualnej klawiatury po kliknięciu Enter (dla wygody na mobile)
-                event.target.blur();
-            }
+            if (event.key === 'Enter') { dodajSprzedaz(kategoria); }
         }
 
         function dodajSprzedaz(kategoria) {
@@ -357,9 +329,7 @@
             const qtyInput = document.getElementById(`qty-${kategoria}`);
             
             const nazwaSzczegolowa = nameInput.value.trim() || "Bez opisu";
-            // Zabezpieczenie przed wpisywaniem przecinków zamiast kropek na klawiaturach mobilnych
-            let cenaStr = priceInput.value.replace(',', '.');
-            const cena = parseFloat(cenaStr);
+            const cena = parseFloat(priceInput.value);
             const ilosc = parseInt(qtyInput.value) || 1;
             
             if (isNaN(cena) || cena <= 0) {
@@ -378,6 +348,7 @@
             nameInput.value = '';
             priceInput.value = '';
             qtyInput.value = '1';
+            nameInput.focus();
             
             zapiszIDzialaj();
         }
@@ -423,7 +394,7 @@
                             <span class="sale-subtitle">${item.cena} zł x ${item.ilosc} szt.</span>
                         </div>
                         <div style="display: flex; align-items: center;">
-                            <span style="font-weight: bold; color: #ff006e; white-space: nowrap;">${sumaDlaPozycji} zł</span>
+                            <span style="font-weight: bold; color: #ff006e;">${sumaDlaPozycji} zł</span>
                             <button class="btn-delete" onclick="usunWpis('${item.id}')">X</button>
                         </div>
                     </div>
@@ -445,12 +416,73 @@
             }
         }
 
-        function pobierzSumeDnia(dataString) {
+        // ---------- FUNKCJA DO ZLICZANIA KATEGORII Z PODZIAŁEM NA CENY ----------
+        function pobierzZestawienieDnia(dataString) {
             const zapisane = localStorage.getItem(`targ_sprzedaz_v3_${dataString}`);
-            if (!zapisane) return 0;
-            let suma = 0;
-            JSON.parse(zapisane).forEach(item => suma += (item.cena * item.ilosc));
-            return suma;
+            let wynik = { suma: 0, kategorie: {} };
+            if (!zapisane) return wynik;
+            
+            JSON.parse(zapisane).forEach(item => {
+                wynik.suma += (item.cena * item.ilosc);
+                
+                if (!wynik.kategorie[item.kategoria]) {
+                    wynik.kategorie[item.kategoria] = { sumaSztuk: 0, poCenie: {} };
+                }
+                
+                wynik.kategorie[item.kategoria].sumaSztuk += item.ilosc;
+                
+                const cenaStr = item.cena.toString();
+                if (!wynik.kategorie[item.kategoria].poCenie[cenaStr]) {
+                    wynik.kategorie[item.kategoria].poCenie[cenaStr] = 0;
+                }
+                wynik.kategorie[item.kategoria].poCenie[cenaStr] += item.ilosc;
+            });
+            return wynik;
+        }
+
+        function agregujKategorie(zbiorczeKategorie, kategoria, daneDoDodania) {
+            if (!zbiorczeKategorie[kategoria]) {
+                zbiorczeKategorie[kategoria] = { sumaSztuk: 0, poCenie: {} };
+            }
+            
+            zbiorczeKategorie[kategoria].sumaSztuk += daneDoDodania.sumaSztuk;
+            
+            for (const [cenaStr, ilosc] of Object.entries(daneDoDodania.poCenie)) {
+                if (!zbiorczeKategorie[kategoria].poCenie[cenaStr]) {
+                    zbiorczeKategorie[kategoria].poCenie[cenaStr] = 0;
+                }
+                zbiorczeKategorie[kategoria].poCenie[cenaStr] += ilosc;
+            }
+        }
+
+        // ---------- FUNKCJE RAPORTÓW (DZIEŃ / TYDZIEŃ / MIESIĄC) ----------
+        function pokazRaportDnia() {
+            const daneDnia = pobierzZestawienieDnia(currentDate);
+            let listaHTML = '';
+            let lacznaIlosc = 0;
+            
+            if (daneDnia.suma > 0) {
+                listaHTML += `
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #ddd;">
+                        <span>Data raportu:</span>
+                        <strong style="color: #3a86ff;">${currentDate}</strong>
+                    </div>
+                `;
+                listaHTML += wygenerujHTMLDlaKategorii(daneDnia.kategorie);
+                
+                for (const dane of Object.values(daneDnia.kategorie)) {
+                    lacznaIlosc += dane.sumaSztuk;
+                }
+            }
+            
+            wyswietlRaportNaEkranie(
+                '📝 Raport Dzienny', 
+                `Podsumowanie z wybranego dnia`,
+                listaHTML, 
+                daneDnia.suma,
+                '#3a86ff',
+                lacznaIlosc
+            );
         }
 
         function pokazRaportTygodnia() {
@@ -462,22 +494,35 @@
             poniedzialek.setDate(wybrana.getDate() + korektaDoPoniedzialku);
 
             let sumaTygodnia = 0;
+            let zbiorczeKategorie = {};
             let listaHTML = '';
+            let lacznaIlosc = 0;
 
             for(let i=0; i<7; i++) {
                 let d = new Date(poniedzialek);
                 d.setDate(poniedzialek.getDate() + i);
                 const dataStr = d.toISOString().split('T')[0];
-                const sumaDnia = pobierzSumeDnia(dataStr);
+                const daneDnia = pobierzZestawienieDnia(dataStr);
                 
-                if (sumaDnia > 0) {
-                    sumaTygodnia += sumaDnia;
+                if (daneDnia.suma > 0) {
+                    sumaTygodnia += daneDnia.suma;
                     listaHTML += `
                         <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #ddd;">
                             <span>${dataStr}</span>
-                            <strong style="color: #3a86ff;">${sumaDnia} zł</strong>
+                            <strong style="color: #3a86ff;">${daneDnia.suma} zł</strong>
                         </div>
                     `;
+                    for (const [kat, daneKat] of Object.entries(daneDnia.kategorie)) {
+                        agregujKategorie(zbiorczeKategorie, kat, daneKat);
+                    }
+                }
+            }
+            
+            if (Object.keys(zbiorczeKategorie).length > 0) {
+                listaHTML += wygenerujHTMLDlaKategorii(zbiorczeKategorie);
+                
+                for (const dane of Object.values(zbiorczeKategorie)) {
+                    lacznaIlosc += dane.sumaSztuk;
                 }
             }
             
@@ -488,7 +533,9 @@
                 '📊 Raport Tygodniowy', 
                 `${poniedzialek.toISOString().split('T')[0]} — ${niedziela.toISOString().split('T')[0]}`,
                 listaHTML, 
-                sumaTygodnia
+                sumaTygodnia,
+                '#ffb703',
+                lacznaIlosc
             );
         }
 
@@ -498,7 +545,9 @@
             const miesiac = podzial[1];
             
             let sumaMiesiaca = 0;
+            let zbiorczeKategorie = {};
             let listaHTML = '';
+            let lacznaIlosc = 0;
             
             for(let i = 1; i <= 31; i++) {
                 const dzien = String(i).padStart(2, '0');
@@ -507,15 +556,26 @@
                 const sprawdzanaData = new Date(dataStr);
                 if(isNaN(sprawdzanaData.getTime()) || sprawdzanaData.getMonth() + 1 != parseInt(miesiac)) continue;
 
-                const sumaDnia = pobierzSumeDnia(dataStr);
-                if (sumaDnia > 0) {
-                    sumaMiesiaca += sumaDnia;
+                const daneDnia = pobierzZestawienieDnia(dataStr);
+                if (daneDnia.suma > 0) {
+                    sumaMiesiaca += daneDnia.suma;
                     listaHTML += `
                         <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #ddd;">
                             <span>${dataStr}</span>
-                            <strong style="color: #8338ec;">${sumaDnia} zł</strong>
+                            <strong style="color: #8338ec;">${daneDnia.suma} zł</strong>
                         </div>
                     `;
+                    for (const [kat, daneKat] of Object.entries(daneDnia.kategorie)) {
+                        agregujKategorie(zbiorczeKategorie, kat, daneKat);
+                    }
+                }
+            }
+
+            if (Object.keys(zbiorczeKategorie).length > 0) {
+                listaHTML += wygenerujHTMLDlaKategorii(zbiorczeKategorie);
+                
+                for (const dane of Object.values(zbiorczeKategorie)) {
+                    lacznaIlosc += dane.sumaSztuk;
                 }
             }
 
@@ -523,64 +583,189 @@
                 '📅 Raport Miesięczny', 
                 `Miesiąc: ${miesiac} / ${rok}`,
                 listaHTML, 
-                sumaMiesiaca
+                sumaMiesiaca,
+                '#fb8500',
+                lacznaIlosc
             );
         }
 
-        function wyswietlRaportNaEkranie(tytul, podtytul, listaHTML, suma) {
+        function wygenerujHTMLDlaKategorii(zbiorczeKategorie) {
+            let html = `<div style="margin-top: 15px; padding-top: 10px; border-top: 2px solid #f4f0fa;">
+                <strong style="color: #555;">📦 Podsumowanie sztuk (z podziałem na ceny):</strong>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">`;
+            
+            for (const [kat, daneKat] of Object.entries(zbiorczeKategorie)) {
+                let detaleCen = [];
+                for (const [cenaStr, ilosc] of Object.entries(daneKat.poCenie)) {
+                    detaleCen.push(`${ilosc}x ${cenaStr} zł`);
+                }
+                let spanDetali = detaleCen.length > 0 
+                    ? ` <span style="font-size: 0.85em; font-weight: normal; color: #555;">(${detaleCen.join(', ')})</span>` 
+                    : '';
+
+                html += `<div style="background: #eef1ff; padding: 8px 10px; border-radius: 6px; font-size: 0.95em; color: #3a86ff; font-weight: bold;">
+                    ${kat}: ${daneKat.sumaSztuk} szt.${spanDetali}
+                </div>`;
+            }
+            html += `</div></div>`;
+            return html;
+        }
+
+        function wyswietlRaportNaEkranie(tytul, podtytul, listaHTML, suma, kolorAkcentu = '#ffb703', lacznaIlosc = 0) {
             const container = document.getElementById('periodic-report');
+            container.style.borderLeft = `5px solid ${kolorAkcentu}`;
             container.innerHTML = `
-                <h3 style="margin-top:0; color: #ffb703; font-size: 1.4em;">${tytul}</h3>
+                <h3 style="margin-top:0; color: ${kolorAkcentu}; font-size: 1.4em;">${tytul}</h3>
                 <div style="font-size: 0.95em; color: #666; margin-bottom: 15px;">${podtytul}</div>
                 
                 <div style="margin-bottom: 15px;">
                     ${listaHTML || '<p style="color:#999; text-align: center;">Brak danych sprzedażowych w tym okresie.</p>'}
                 </div>
                 
-                <div style="margin-top: 15px; font-size: 1.3em; text-align: right; border-top: 2px solid #eee; padding-top: 10px;">
-                    Łączna suma: <strong style="color:#ff006e; font-size: 1.2em;">${suma} zł</strong>
+                <div style="margin-top: 15px; font-size: 1.1em; border-top: 2px solid #eee; padding-top: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>Wszystkich rzeczy: <strong style="color:${kolorAkcentu}; font-size: 1.25em;">${lacznaIlosc} szt.</strong></div>
+                    <div>Łączny utarg: <strong style="color:#ff006e; font-size: 1.25em;">${suma} zł</strong></div>
                 </div>
             `;
             container.style.display = 'block';
         }
 
+        // Generowanie PDF DZIENNEGO
         function generujPDF() {
-            try {
-                if (typeof window.jspdf === 'undefined') {
-                    alert("Biblioteka PDF jeszcze się nie załadowała. Upewnij się, że masz połączenie z internetem i spróbuj ponownie za chwilę.");
-                    return;
-                }
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                doc.setFont("helvetica");
-                doc.setFontSize(18);
-                doc.text("Raport sprzedazy",15,20);
-                doc.setFontSize(11);
-                doc.text("Data: "+new Date().toLocaleDateString("pl-PL"),15,30);
-                let y=45,suma=0;
-                
-                if(sprzedaz.length===0){
-                    doc.text("Brak sprzedazy.",15,y);
-                } else {
-                  sprzedaz.forEach(item=>{
-                    const wartosc=item.cena*item.ilosc;
-                    suma+=wartosc;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFont("helvetica");
+            doc.setFontSize(18);
+            doc.text("Raport dzienny",15,20);
+            doc.setFontSize(11);
+            doc.text("Data: " + currentDate,15,30);
+            
+            let y=45, suma=0, lacznaIloscPdf = 0;
+            let zbiorczeKategorie = {};
+
+            if(sprzedaz.length===0){
+                doc.text("Brak sprzedazy.",15,y);
+            } else {
+                sprzedaz.forEach(item => {
+                    const wartosc = item.cena * item.ilosc;
+                    suma += wartosc;
                     doc.text(`${item.kategoria} | ${item.nazwa} | ${item.cena} zl x ${item.ilosc} = ${wartosc} zl`,15,y);
+                    
+                    if (!zbiorczeKategorie[item.kategoria]) {
+                        zbiorczeKategorie[item.kategoria] = { sumaSztuk: 0, poCenie: {} };
+                    }
+                    zbiorczeKategorie[item.kategoria].sumaSztuk += item.ilosc;
+                    
+                    const cenaStr = item.cena.toString();
+                    if (!zbiorczeKategorie[item.kategoria].poCenie[cenaStr]) {
+                        zbiorczeKategorie[item.kategoria].poCenie[cenaStr] = 0;
+                    }
+                    zbiorczeKategorie[item.kategoria].poCenie[cenaStr] += item.ilosc;
+
+                    lacznaIloscPdf += item.ilosc;
+
                     y+=8;
                     if(y>270){doc.addPage();y=20;}
-                  });
-                  y+=10;
-                  doc.setFontSize(14);
-                  doc.text(`Laczny utarg: ${suma} zl`,15,y);
+                });
+                
+                y+=10;
+                doc.setFontSize(14);
+                doc.text(`Laczny utarg: ${suma} zl`,15,y);
+                doc.setFontSize(12);
+                doc.text(`Wszystkich sprzedanych rzeczy ogolem: ${lacznaIloscPdf} szt.`,15,y+8);
+                
+                y+=22;
+                doc.setFontSize(12);
+                doc.text("Podsumowanie sztuk (z podzialem na ceny):", 15, y);
+                y+=8;
+                doc.setFontSize(11);
+                
+                for (const [kat, daneKat] of Object.entries(zbiorczeKategorie)) {
+                    let detaleCen = [];
+                    for (const [cenaStr, ilosc] of Object.entries(daneKat.poCenie)) {
+                        detaleCen.push(`${ilosc}x ${cenaStr} zl`);
+                    }
+                    let tekstNawiasu = detaleCen.length > 0 ? ` (${detaleCen.join(', ')})` : '';
+                    
+                    doc.text(`- ${kat}: ${daneKat.sumaSztuk} szt.${tekstNawiasu}`, 15, y);
+                    y+=6;
+                    if(y>270){doc.addPage();y=20;}
                 }
-                doc.save(`Raport_${currentDate}.pdf`);
-            } catch(e) {
-                alert("Wystąpił błąd podczas generowania pliku PDF na tym urządzeniu.");
-                console.error(e);
             }
+            doc.save(`Raport_Dzienny_${currentDate}.pdf`);
+        }
+
+        // Generowanie PDF MIESIĘCZNEGO
+        function generujPDFMiesiaca() {
+            const podzial = currentDate.split('-');
+            const rok = podzial[0];
+            const miesiac = podzial[1];
+            
+            let sumaMiesiaca = 0;
+            let zbiorczeKategorie = {};
+            let lacznaIlosc = 0;
+            
+            for(let i = 1; i <= 31; i++) {
+                const dzien = String(i).padStart(2, '0');
+                const dataStr = `${rok}-${miesiac}-${dzien}`;
+                
+                const sprawdzanaData = new Date(dataStr);
+                if(isNaN(sprawdzanaData.getTime()) || sprawdzanaData.getMonth() + 1 != parseInt(miesiac)) continue;
+
+                const daneDnia = pobierzZestawienieDnia(dataStr);
+                if (daneDnia.suma > 0) {
+                    sumaMiesiaca += daneDnia.suma;
+                    for (const [kat, daneKat] of Object.entries(daneDnia.kategorie)) {
+                        agregujKategorie(zbiorczeKategorie, kat, daneKat);
+                    }
+                }
+            }
+
+            for (const dane of Object.values(zbiorczeKategorie)) {
+                lacznaIlosc += dane.sumaSztuk;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFont("helvetica");
+            doc.setFontSize(18);
+            doc.text("Raport Miesieczny: " + miesiac + "/" + rok, 15, 20);
+            doc.setFontSize(11);
+            doc.text("Wygenerowano: " + new Date().toLocaleDateString("pl-PL"), 15, 30);
+            
+            let y = 45;
+
+            if(sumaMiesiaca === 0) {
+                doc.text("Brak sprzedazy w tym miesiacu.", 15, y);
+            } else {
+                doc.setFontSize(14);
+                doc.text(`Laczny utarg: ${sumaMiesiaca} zl`, 15, y);
+                doc.setFontSize(12);
+                doc.text(`Wszystkich sprzedanych rzeczy ogolem: ${lacznaIlosc} szt.`, 15, y+8);
+                
+                y+=22;
+                doc.setFontSize(12);
+                doc.text("Podsumowanie sztuk (z podzialem na ceny):", 15, y);
+                y+=8;
+                doc.setFontSize(11);
+                
+                for (const [kat, daneKat] of Object.entries(zbiorczeKategorie)) {
+                    let detaleCen = [];
+                    for (const [cenaStr, ilosc] of Object.entries(daneKat.poCenie)) {
+                        detaleCen.push(`${ilosc}x ${cenaStr} zl`);
+                    }
+                    let tekstNawiasu = detaleCen.length > 0 ? ` (${detaleCen.join(', ')})` : '';
+                    
+                    doc.text(`- ${kat}: ${daneKat.sumaSztuk} szt.${tekstNawiasu}`, 15, y);
+                    y+=6;
+                    if(y>270){doc.addPage();y=20;}
+                }
+            }
+            doc.save(`Raport_Miesieczny_${rok}-${miesiac}.pdf`);
         }
 
         window.onload = init;
     </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>
