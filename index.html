@@ -26,6 +26,51 @@
             margin: 0 0 10px 0;
             font-size: 1.6em;
         }
+        
+        /* Menu zakładek */
+        .app-navigation {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .nav-tab-btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background-color: #e2d9f3;
+            color: #555;
+        }
+        .nav-tab-btn.active-main-tab {
+            background-color: #8338ec;
+            color: white;
+            box-shadow: 0 4px 6px rgba(131, 56, 236, 0.2);
+        }
+        .nav-tab-btn.thieves-nav-btn {
+            background-color: #e2f3e7;
+            color: #1e7e34;
+        }
+        .nav-tab-btn.thieves-nav-btn.active-thieves-tab {
+            background-color: #28a745;
+            color: white;
+            box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2);
+        }
+
+        .view-panel {
+            display: none;
+        }
+        .view-panel.active-panel {
+            display: block;
+        }
+
         .date-container {
             background: white;
             padding: 15px;
@@ -138,6 +183,26 @@
         }
         .sale-title { font-weight: bold; color: #333; }
         .sale-subtitle { font-size: 0.85em; color: #666; margin-top: 2px; }
+        
+        .action-item-buttons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-action-thief {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .btn-action-thief:hover { background-color: #1e7e34; }
         .btn-delete {
             background-color: #ff4d4d;
             color: white;
@@ -147,7 +212,6 @@
             cursor: pointer;
             font-size: 0.85em;
             font-weight: bold;
-            margin-left: 10px;
         }
         .btn-delete:hover { background-color: #e60000; }
 
@@ -222,6 +286,108 @@
             border-left: 5px solid #ffb703;
         }
 
+        /* --- STYLIZACJA DLA ZAKŁADKI ZŁODZIEJE --- */
+        .thieves-container-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border-left: 5px solid #28a745;
+            margin-bottom: 25px;
+        }
+        .thieves-title {
+            color: #28a745;
+            margin-top: 0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .thieves-limits-box {
+            background: #f4fbf6;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px dashed #28a745;
+            margin-bottom: 20px;
+        }
+        .thieves-limits-box h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #1e7e34;
+        }
+        .limit-row-input {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2f3e7;
+        }
+        .limit-row-input:last-child {
+            border-bottom: none;
+        }
+        .limit-label {
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+        .limit-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .limit-controls input {
+            width: 60px;
+            padding: 6px;
+            border: 2px solid #c3ebd0;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .limit-controls input:focus {
+            outline: none;
+            border-color: #28a745;
+        }
+        .btn-clear-category {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.8em;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-clear-category:hover { background-color: #5a6268; }
+
+        .thieves-summary-output {
+            background: white;
+            border: 2px solid #28a745;
+            border-radius: 12px;
+            padding: 15px;
+        }
+        .thieves-summary-output h4 {
+            margin-top: 0;
+            color: #1e7e34;
+            border-bottom: 2px solid #e2f3e7;
+            padding-bottom: 8px;
+        }
+        .thief-summary-item {
+            background: #f4fbf6;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 1em;
+            color: #1e7e34;
+            font-weight: bold;
+            margin-bottom: 8px;
+            border-left: 4px solid #28a745;
+        }
+        .thief-summary-item span.details {
+            font-size: 0.85em;
+            font-weight: normal;
+            color: #555;
+            display: block;
+            margin-top: 4px;
+        }
+
     </style>
 </head>
 <body>
@@ -231,36 +397,85 @@
         <div style="font-size: 0.9em; opacity: 0.9;">Kompletny menedżer handlu</div>
     </div>
 
-    <div class="date-container">
-        <label for="selected-date">📅 Wybierz dzień:</label>
-        <input type="date" id="selected-date">
+    <!-- Pasek nawigacyjny przełączający panele aplikacji -->
+    <div class="app-navigation">
+        <button id="tab-main" class="nav-tab-btn active-main-tab" onclick="changePanel('main')">
+            📋 Sprzedaż
+        </button>
+        <button id="tab-thieves" class="nav-tab-btn thieves-nav-btn" onclick="changePanel('thieves')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 21a6 6 0 0 0-12 0"></path>
+                <circle cx="12" cy="10" r="4"></circle>
+                <path d="M12 2v2"></path>
+            </svg>
+            Złodzieje
+        </button>
     </div>
 
-    <div id="categories-container"></div>
+    <!-- PANELE APLIKACJI -->
 
-    <div class="sales-list-container">
-        <h3>📋 Sprzedane rzeczy:</h3>
-        <div id="sales-list"></div>
+    <!-- PANEL 1: GŁÓWNA SPRZEDAŻ -->
+    <div id="panel-sales-view" class="view-panel active-panel">
+        <div class="date-container">
+            <label for="selected-date">📅 Wybierz dzień:</label>
+            <input type="date" id="selected-date">
+        </div>
+
+        <div id="categories-container"></div>
+
+        <div class="sales-list-container">
+            <h3>📋 Sprzedane rzeczy:</h3>
+            <div id="sales-list"></div>
+        </div>
+
+        <div class="live-earnings">
+            <span>Suma zarobku dnia:</span>
+            <span id="live-total" style="color: #3a86ff;">0 zł</span>
+        </div>
+
+        <div class="action-btns">
+            <button class="btn-action btn-reset" onclick="clearCurrentDay()">❌ Wyzeruj ten dzień</button>
+        </div>
+
+        <div class="reports-btns">
+            <button class="btn-report" style="background-color: #3a86ff; color: white;" onclick="pokazRaportDnia()">📝 Raport Dzienny</button>
+            <button class="btn-report" onclick="pokazRaportTygodnia()">📊 Raport Tygodniowy</button>
+            <button class="btn-report" onclick="pokazRaportMiesiaca()">📅 Raport Miesięczny</button>
+            <button class="btn-report" style="background-color: #ff006e; color: white;" onclick="generujPDF()">📄 PDF Dzienny</button>
+            <button class="btn-report" style="background-color: #8338ec; color: white;" onclick="generujPDFMiesiaca()">📄 PDF Miesięczny</button>
+        </div>
+
+        <div id="periodic-report"></div>
     </div>
 
-    <div class="live-earnings">
-        <span>Suma zarobku dnia:</span>
-        <span id="live-total" style="color: #3a86ff;">0 zł</span>
-    </div>
+    <!-- PANEL 2: ZAKŁADKA ZŁODZIEJE -->
+    <div id="panel-thieves-view" class="view-panel">
+        <div class="thieves-container-card">
+            <h3 class="thieves-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 21a6 6 0 0 0-12 0"></path>
+                    <circle cx="12" cy="10" r="4"></circle>
+                    <path d="M12 2v2"></path>
+                </svg>
+                Rejestr Złodziei
+            </h3>
+            <p style="font-size: 0.9em; color: #666; margin-top: -10px; margin-bottom: 15px;">
+                Ta zakładka zbiera dane bez resetów czasowych. Możesz tu ustalać maksymalne limity i czyścić wybrane kategorie.
+            </p>
 
-    <div class="action-btns">
-        <button class="btn-action btn-reset" onclick="clearCurrentDay()">❌ Wyzeruj ten dzień</button>
-    </div>
+            <!-- Ustawienia limitów dla kategorii -->
+            <div class="thieves-limits-box">
+                <h4>Edycja limitów maksymalnych i czyszczenie:</h4>
+                <div id="thieves-inputs-list"></div>
+            </div>
 
-    <div class="reports-btns">
-        <button class="btn-report" style="background-color: #3a86ff; color: white;" onclick="pokazRaportDnia()">📝 Raport Dzienny</button>
-        <button class="btn-report" onclick="pokazRaportTygodnia()">📊 Raport Tygodniowy</button>
-        <button class="btn-report" onclick="pokazRaportMiesiaca()">📅 Raport Miesięczny</button>
-        <button class="btn-report" style="background-color: #ff006e; color: white;" onclick="generujPDF()">📄 PDF Dzienny</button>
-        <button class="btn-report" style="background-color: #8338ec; color: white;" onclick="generujPDFMiesiaca()">📄 PDF Miesięczny</button>
+            <!-- Podsumowanie sztuk z podziałem na ceny -->
+            <div class="thieves-summary-output">
+                <h4>Podsumowanie sztuk z podziałem na ceny:</h4>
+                <div id="thieves-summary-results"></div>
+            </div>
+        </div>
     </div>
-
-    <div id="periodic-report"></div>
 
     <script>
         const kategorie = [
@@ -277,6 +492,10 @@
         
         let currentDate = '';
         let sprzedaz = []; 
+        
+        // --- STAN DLA ZAKŁADKI ZŁODZIEJE ---
+        let zlodziejeBaza = [];
+        let zlodziejeLimity = {};
 
         function init() {
             const dateInput = document.getElementById('selected-date');
@@ -290,6 +509,9 @@
             dateInput.value = dzisiejszaData;
             currentDate = dzisiejszaData;
 
+            wczytajLimityZlodziei();
+            wczytajBazeZlodziei();
+
             renderujFormularzeKategorii();
             wczytajDaneDlaDaty(currentDate);
 
@@ -298,6 +520,23 @@
                 wczytajDaneDlaDaty(currentDate);
                 document.getElementById('periodic-report').style.display = 'none';
             });
+        }
+
+        // Przełączanie widoków w aplikacji
+        function changePanel(panelName) {
+            document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active-panel'));
+            document.getElementById('tab-main').classList.remove('active-main-tab');
+            document.getElementById('tab-thieves').classList.remove('active-thieves-tab');
+
+            if(panelName === 'main') {
+                document.getElementById('panel-sales-view').classList.add('active-panel');
+                document.getElementById('tab-main').classList.add('active-main-tab');
+                renderujListeSprzedanych();
+            } else if(panelName === 'thieves') {
+                document.getElementById('panel-thieves-view').classList.add('active-panel');
+                document.getElementById('tab-thieves').classList.add('active-thieves-tab');
+                renderujPanelZlodziei();
+            }
         }
 
         function renderujFormularzeKategorii() {
@@ -393,14 +632,162 @@
                             <span class="sale-title">${emoji} ${item.kategoria} - ${item.nazwa}</span>
                             <span class="sale-subtitle">${item.cena} zł x ${item.ilosc} szt.</span>
                         </div>
-                        <div style="display: flex; align-items: center;">
-                            <span style="font-weight: bold; color: #ff006e;">${sumaDlaPozycji} zł</span>
+                        <div class="action-item-buttons">
+                            <span style="font-weight: bold; color: #ff006e; margin-right: 5px;">${sumaDlaPozycji} zł</span>
+                            
+                            <!-- ZIELONA IKONA ZŁODZIEJA OBOK X -->
+                            <button class="btn-action-thief" onclick="wyslijDoZlodziei('${item.id}')" title="Przenieś do zakładki Złodzieje">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 21a6 6 0 0 0-12 0"></path>
+                                    <circle cx="12" cy="10" r="4"></circle>
+                                    <path d="M12 2v2"></path>
+                                </svg>
+                            </button>
+
                             <button class="btn-delete" onclick="usunWpis('${item.id}')">X</button>
                         </div>
                     </div>
                 `;
             });
         }
+
+        // --- OBSŁUGA FUNKCJONALNOŚCI ZAKŁADKI ZŁODZIEJE ---
+
+        function wczytajLimityZlodziei() {
+            const zapisane = localStorage.getItem('targ_zlodzieje_limity');
+            if(zapisane) {
+                zlodziejeLimity = JSON.parse(zapisane);
+            } else {
+                kategorie.forEach(k => { zlodziejeLimity[k.nazwa] = 50; });
+                zapiszLimityZlodziei();
+            }
+        }
+
+        function zapiszLimityZlodziei() {
+            localStorage.setItem('targ_zlodzieje_limity', JSON.stringify(zlodziejeLimity));
+        }
+
+        function wczytajBazeZlodziei() {
+            const zapisane = localStorage.getItem('targ_zlodzieje_baza');
+            zlodziejeBaza = zapisane ? JSON.parse(zapisane) : [];
+        }
+
+        function zapiszBazeZlodziei() {
+            localStorage.setItem('targ_zlodzieje_baza', JSON.stringify(zlodziejeBaza));
+        }
+
+        // Akcja kliknięcia w zieloną ikonę przy produkcie dnia z potwierdzeniem
+        function wyslijDoZlodziei(idWpisu) {
+            const produkt = sprzedaz.find(item => item.id === idWpisu);
+            if(!produkt) return;
+
+            // DODANE POTWIERDZENIE (ZABEZPIECZENIE PRZED PRZYPADKOWYM KLIKNIĘCIEM)
+            if(!confirm(`Czy na pewno chcesz dodać ten przedmiot (${produkt.kategoria} - ${produkt.nazwa}) do zakładki Złodzieje?`)) {
+                return; // Przerywa działanie, jeśli wybrano "Anuluj"
+            }
+
+            const kat = produkt.kategoria;
+            
+            const aktualnieSztuk = zlodziejeBaza
+                .filter(item => item.kategoria === kat)
+                .reduce((sum, item) => sum + item.ilosc, 0);
+
+            const limitKat = zlodziejeLimity[kat] || 0;
+
+            if(aktualnieSztuk + produkt.ilosc > limitKat) {
+                alert(`⚠️ Osiągnięto limit w kategorii: ${kat}!\nMaksymalna ilość wynosi ${limitKat} szt., a obecnie w bazie złodziei jest już ${aktualnieSztuk} szt.\nNie można dodać więcej.`);
+                return;
+            }
+
+            zlodziejeBaza.push({
+                id: Date.now() + Math.random().toString(36).substr(2, 5),
+                kategoria: produkt.kategoria,
+                cena: produkt.cena,
+                ilosc: produkt.ilosc
+            });
+
+            zapiszBazeZlodziei();
+            alert(`Pomyślnie dodano do zakładki Złodzieje (${kat})!`);
+        }
+
+        function zmienLimitKategorii(katNazwa, nowaWartosc) {
+            const val = parseInt(nowaWartosc);
+            zlodziejeLimity[katNazwa] = isNaN(val) ? 0 : val;
+            zapiszLimityZlodziei();
+            renderujPanelZlodziei();
+        }
+
+        function resetujKategorieZlodziei(katNazwa) {
+            if(confirm(`Czy na pewno chcesz wyczyścić i wyzerować wszystkie sztuki z kategorii "${katNazwa}" w zakładce Złodzieje?`)) {
+                zlodziejeBaza = zlodziejeBaza.filter(item => item.kategoria !== katNazwa);
+                zapiszBazeZlodziei();
+                renderujPanelZlodziei();
+            }
+        }
+
+        function renderujPanelZlodziei() {
+            const inputsContainer = document.getElementById('thieves-inputs-list');
+            inputsContainer.innerHTML = '';
+
+            kategorie.forEach(kat => {
+                const stanSztuk = zlodziejeBaza
+                    .filter(item => item.kategoria === kat.nazwa)
+                    .reduce((sum, item) => sum + item.ilosc, 0);
+                
+                const limitVal = zlodziejeLimity[kat.nazwa] || 0;
+                const alertStyle = (stanSztuk >= limitVal && limitVal > 0) ? 'color: #ff006e; font-weight: bold;' : 'color: #666;';
+
+                inputsContainer.innerHTML += `
+                    <div class="limit-row-input">
+                        <span class="limit-label">${kat.emoji} ${kat.nazwa}</span>
+                        <div class="limit-controls">
+                            <span style="font-size: 0.85em; ${alertStyle}">(${stanSztuk} / ${limitVal} szt.)</span>
+                            <input type="number" min="0" value="${limitVal}" onchange="zmienLimitKategorii('${kat.nazwa}', this.value)">
+                            <button class="btn-clear-category" onclick="resetujKategorieZlodziei('${kat.nazwa}')">Wyzeruj</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const summaryContainer = document.getElementById('thieves-summary-results');
+            summaryContainer.innerHTML = '';
+
+            if(zlodziejeBaza.length === 0) {
+                summaryContainer.innerHTML = '<p style="color: #999; text-align: center; margin: 10px 0;">Brak danych w bazie złodziei.</p>';
+                return;
+            }
+
+            let strukturaZliczania = {};
+            zlodziejeBaza.forEach(item => {
+                if(!strukturaZliczania[item.kategoria]) {
+                    strukturaZliczania[item.kategoria] = { sumaSztuk: 0, poCenie: {} };
+                }
+                strukturaZliczania[item.kategoria].sumaSztuk += item.ilosc;
+                
+                const cenaStr = item.cena.toString();
+                if(!strukturaZliczania[item.kategoria].poCenie[cenaStr]) {
+                    strukturaZliczania[item.kategoria].poCenie[cenaStr] = 0;
+                }
+                strukturaZliczania[item.kategoria].poCenie[cenaStr] += item.ilosc;
+            });
+
+            for (const [kat, daneKat] of Object.entries(strukturaZliczania)) {
+                let detaleCen = [];
+                for (const [cenaStr, ilosc] of Object.entries(daneKat.poCenie)) {
+                    detaleCen.push(`${ilosc}x ${cenaStr} zł`);
+                }
+                let opisNawiasu = detaleCen.length > 0 ? `(${detaleCen.join(', ')})` : '';
+
+                summaryContainer.innerHTML += `
+                    <div class="thief-summary-item">
+                        ${kat}: ${daneKat.sumaSztuk} szt.
+                        <span class="details">${opisNawiasu}</span>
+                    </div>
+                `;
+            }
+        }
+
+        // --- KONIEC FUNKCJONALNOŚCI ZŁODZIEI ---
 
         function odswiezUtargNaZywo() {
             let suma = 0;
@@ -416,7 +803,6 @@
             }
         }
 
-        // ---------- FUNKCJA DO ZLICZANIA KATEGORII Z PODZIAŁEM NA CENY ----------
         function pobierzZestawienieDnia(dataString) {
             const zapisane = localStorage.getItem(`targ_sprzedaz_v3_${dataString}`);
             let wynik = { suma: 0, kategorie: {} };
@@ -455,7 +841,6 @@
             }
         }
 
-        // ---------- FUNKCJE RAPORTÓW (DZIEŃ / TYDZIEŃ / MIESIĄC) ----------
         function pokazRaportDnia() {
             const daneDnia = pobierzZestawienieDnia(currentDate);
             let listaHTML = '';
@@ -630,7 +1015,6 @@
             container.style.display = 'block';
         }
 
-        // Generowanie PDF DZIENNEGO
         function generujPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
@@ -695,7 +1079,6 @@
             doc.save(`Raport_Dzienny_${currentDate}.pdf`);
         }
 
-        // Generowanie PDF MIESIĘCZNEGO
         function generujPDFMiesiaca() {
             const podzial = currentDate.split('-');
             const rok = podzial[0];
