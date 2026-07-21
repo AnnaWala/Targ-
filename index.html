@@ -301,10 +301,6 @@
             display: flex;
             justify-content: space-between;
         }
-        .live-thieves-loss {
-            background: #f4fbf6;
-            border-left: 5px solid #28a745;
-        }
 
         /* Przyciski akcji główne */
         .action-btns {
@@ -428,20 +424,11 @@
         <div id="categories-thieves-container"></div>
 
         <div class="sales-list-container">
-            <h3 class="thieves-list-title">🥷 Skradzione rzeczy z tego dnia:</h3>
+            <h3 class="thieves-list-title">🥷 Skradzione rzeczy z tej faktury:</h3>
             <div id="thieves-list"></div>
         </div>
 
-        <div class="live-earnings live-thieves-loss">
-            <span>Wartość strat z dnia:</span>
-            <span id="live-thieves-total" style="color: #28a745;">0 zł</span>
-        </div>
-
-        <div class="action-btns">
-            <button class="btn-reset" onclick="clearCurrentDay('zlodzieje')">❌ Wyzeruj ten dzień złodziei</button>
-        </div>
-
-        <div class="reports-btns">
+        <div class="reports-btns" style="margin-top: 30px;">
             <button class="btn-report" style="background-color: #28a745; color: white;" onclick="pokazRaportDnia('zlodzieje')">📝 Raport Dzienny Złodzieje</button>
             <button class="btn-report" style="background-color: #17a2b8; color: white;" onclick="pokazRaportMiesiaca('zlodzieje')">📅 Raport Miesięczny Złodzieje</button>
             <button class="btn-report" style="background-color: #20c997; color: white;" onclick="generujPDFMiesiaca('zlodzieje')">📄 PDF Miesięczny Złodzieje</button>
@@ -460,7 +447,8 @@
             { nazwa: 'Tunika', emoji: '👘' },
             { nazwa: 'Wisiorek', emoji: '📿' },
             { nazwa: 'Rekawiczki', emoji: '🧤' },
-            { nazwa: 'Skarpety', emoji: '🧦' }
+            { nazwa: 'Skarpety', emoji: '🧦' },
+            { nazwa: 'Dresy', emoji: '👖' }
         ];
         
         let currentDate = '';
@@ -508,6 +496,10 @@
             const zapisane = localStorage.getItem('targ_zlodzieje_limity');
             if(zapisane) {
                 zlodziejeLimity = JSON.parse(zapisane);
+                // Upewniamy się, że nowa kategoria ma domyślny limit jeśli wczytujemy stary zapis
+                kategorie.forEach(k => {
+                    if(zlodziejeLimity[k.nazwa] === undefined) zlodziejeLimity[k.nazwa] = 50;
+                });
             } else {
                 kategorie.forEach(k => { zlodziejeLimity[k.nazwa] = 50; });
                 zapiszLimityZlodziei();
@@ -576,7 +568,6 @@
             });
         }
 
-        // Przełączanie widoków
         function changePanel(panelName) {
             document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active-panel'));
             document.getElementById('tab-main').classList.remove('active-main-tab');
@@ -714,7 +705,7 @@
                 zlodzieje = zapisane ? JSON.parse(zapisane) : [];
             }
             renderujListe(typ);
-            odswiezSumeNaZywo(typ);
+            if(typ === 'sprzedaz') odswiezSumeNaZywo('sprzedaz');
             if(typ === 'zlodzieje') renderujTabelkeLimitow();
         }
 
@@ -723,7 +714,7 @@
             const dane = typ === 'sprzedaz' ? sprzedaz : zlodzieje;
             localStorage.setItem(klucz, JSON.stringify(dane));
             renderujListe(typ);
-            odswiezSumeNaZywo(typ);
+            if(typ === 'sprzedaz') odswiezSumeNaZywo('sprzedaz');
             if(typ === 'zlodzieje') renderujTabelkeLimitow();
         }
 
@@ -759,19 +750,17 @@
         }
 
         function odswiezSumeNaZywo(typ) {
-            const tablica = typ === 'sprzedaz' ? sprzedaz : zlodzieje;
-            const targetId = typ === 'sprzedaz' ? 'live-total' : 'live-thieves-total';
+            if(typ !== 'sprzedaz') return;
             let suma = 0;
-            tablica.forEach(item => suma += item.cena * item.ilosc);
-            document.getElementById(targetId).innerText = `${suma} zł`;
+            sprzedaz.forEach(item => suma += item.cena * item.ilosc);
+            document.getElementById('live-total').innerText = `${suma} zł`;
         }
 
         function clearCurrentDay(typ) {
-            const nazwaPl = typ === 'sprzedaz' ? 'SPRZEDAŻY' : 'ZŁODZIEI';
-            if (confirm(`⚠️ UWAGA!\n\nCzy na pewno chcesz WYZEROWAĆ wpisy z dnia ${currentDate} dla modułu ${nazwaPl}?`)) {
-                if(typ === 'sprzedaz') sprzedaz = [];
-                else zlodzieje = [];
-                zapiszIDzialaj(typ);
+            if(typ !== 'sprzedaz') return;
+            if (confirm(`⚠️ UWAGA!\n\nCzy na pewno chcesz WYZEROWAĆ wpisy z dnia ${currentDate} dla modułu SPRZEDAŻY?`)) {
+                sprzedaz = [];
+                zapiszIDzialaj('sprzedaz');
                 alert(`Wpisy zostały wyzerowane.`);
             }
         }
